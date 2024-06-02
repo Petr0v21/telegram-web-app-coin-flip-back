@@ -1,0 +1,43 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type UserDto {
+  id: String!
+  telegramId: String!
+  userName: String
+  fullName: String!
+  avatar: String
+  balance: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type SuccessOutput {
+  success: Boolean!
+}
+
+type GameDto {
+  id: String!
+  isWin: Boolean!
+  bet: Float!
+  userId: String!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  User: UserDto!
+}
+
+type Query {
+  getMe: UserDto!
+  getHistory(take: Float, skip: Float): [GameDto!]!
+  validateTelegramHash(query: String!): SuccessOutput!
+}
+
+type Mutation {
+  play(bet: Float!): SuccessOutput!
+}
