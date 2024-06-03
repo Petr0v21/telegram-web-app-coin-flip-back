@@ -27,13 +27,19 @@ model User {
 }
 
 model Game {
-  id    String  @id @default(uuid())
+  id    String   @id @default(uuid())
   isWin Boolean
   bet   Int
+  side  CoinSide
 
   userId String
   User   User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum CoinSide {
+  HEADS
+  TAILS
 }

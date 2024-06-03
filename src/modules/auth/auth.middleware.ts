@@ -57,9 +57,12 @@ export class AuthMiddleware implements NestMiddleware {
         throw new UnauthorizedException('Invalid provided Query');
       }
 
-      const user = await this.userService.user({
-        telegramId: validateStatus.userId,
-      });
+      const user = await this.userService.user(
+        {
+          telegramId: validateStatus.userId,
+        },
+        {},
+      );
 
       if (!user) {
         throw new UnauthorizedException('This telegram user not exist in db');

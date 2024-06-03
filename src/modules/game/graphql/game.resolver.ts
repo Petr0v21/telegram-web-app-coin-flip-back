@@ -6,14 +6,10 @@ import { ContextCustomType } from 'src/common/graphql/context';
 import { Game } from '@prisma/client';
 import { GameDto } from './dto/Game.dto';
 import { GetHistoryArgs } from './args/getHistoryArgs';
-import { GatewayService } from 'src/modules/gateway/gateway.service';
 
 @Resolver('Game')
 export class GameResolver {
-  constructor(
-    private readonly gameService: GameService,
-    private readonly gatewayService: GatewayService,
-  ) {}
+  constructor(private readonly gameService: GameService) {}
 
   @Query(() => [GameDto])
   async getHistory(@Args() { skip, take }: GetHistoryArgs): Promise<Game[]> {
@@ -28,18 +24,16 @@ export class GameResolver {
 
   @Mutation(() => SuccessOutput)
   async play(
-    @Args() args: PlayArgs,
+    @Args() { bet, side }: PlayArgs,
     @Context() { req: { user } }: ContextCustomType,
   ): Promise<SuccessOutput> {
-    this.gatewayService.emitCustomEvent('customEvent', {
-      message: 'Hello from server',
-    });
-    this.gameService.validatePlay(args.bet, user.balance);
+    this.gameService.validatePlay(bet, user.balance);
     const isWin = this.gameService.hasWon(Number(process.env.PERCENT_WIN));
     await this.gameService.createGame(
       {
-        bet: args.bet,
+        bet,
         isWin,
+        side,
         User: {
           connect: {
             id: user.id,

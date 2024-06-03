@@ -39,5 +39,10 @@ type Query {
 }
 
 type Mutation {
-  play(bet: Float!): SuccessOutput!
+  play(bet: Float!, side: CoinSide!): SuccessOutput!
+}
+
+enum CoinSide {
+  HEADS
+  TAILS
 }

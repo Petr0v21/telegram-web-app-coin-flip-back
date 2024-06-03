@@ -19,12 +19,10 @@ export class TelegramService {
   private async getUserAvatar(ctx: Context): Promise<string | undefined> {
     try {
       const photo = (await ctx.getUserProfilePhotos()).photos[0][2];
-      console.log('photos', photo);
       if (!photo) {
         return;
       }
       const photoFile = await this.bot.api.getFile(photo.file_id);
-      console.log('photoFile', photoFile);
 
       const fileResponse = await fetch(
         `https://api.telegram.org/file/bot${this.bot_token}/${photoFile.file_path}`,

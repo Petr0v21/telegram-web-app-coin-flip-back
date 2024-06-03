@@ -11,6 +11,7 @@ import { AuthMiddleware } from './modules/auth/auth.middleware';
 import { S3Module } from './modules/s3/s3.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { GatewayModule } from './modules/gateway/gateway.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { GatewayModule } from './modules/gateway/gateway.module';
       playground: true,
       autoSchemaFile: 'schema.gql',
     }),
+    EventEmitterModule.forRoot(),
     S3Module,
     UserModule,
     GameModule,

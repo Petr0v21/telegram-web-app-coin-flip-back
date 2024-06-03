@@ -2,15 +2,15 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma, Game, User } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
 import { UserService } from '../user/user.service';
-import { GatewayService } from '../gateway/gateway.service';
 import { EventType } from '../gateway/eventType.enum';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class GameService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly userService: UserService,
-    private readonly gatewayService: GatewayService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   hasWon(percentWin?: number): boolean {
@@ -22,6 +22,9 @@ export class GameService {
   ): Promise<Game | null> {
     return this.prismaService.game.findUnique({
       where: gameWhereUniqueInput,
+      include: {
+        User: true,
+      },
     });
   }
 
@@ -40,7 +43,14 @@ export class GameService {
       where,
       orderBy,
       include: {
-        User: true,
+        User: {
+          select: {
+            id: true,
+            avatar: true,
+            fullName: true,
+            userName: true,
+          },
+        },
       },
     });
   }
@@ -50,7 +60,16 @@ export class GameService {
       data,
     });
     await this.userService.updateBalance(data.bet, data.isWin, user);
-    // this.gatewayService.emitEvent('test', {});
+    this.eventEmitter.emit(
+      EventType.UpdateHistory,
+      await this.games({
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: 0,
+        take: 15,
+      }),
+    );
     return result;
   }
 

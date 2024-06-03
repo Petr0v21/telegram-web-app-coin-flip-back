@@ -1,24 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
-import { GatewayService } from '../gateway/gateway.service';
 import { EventType } from '../gateway/eventType.enum';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly prismaService: PrismaService,
-    private readonly gatewayService: GatewayService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async user(
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+    userRelation: Prisma.UserInclude,
   ): Promise<User | null> {
     return this.prismaService.user.findUnique({
       where: userWhereUniqueInput,
-      include: {
-        games: true,
-      },
+      include: userRelation,
     });
   }
 
@@ -67,19 +66,22 @@ export class UserService {
   }
 
   async checkBalance(amountToCheck: number, userId: string) {
-    const user = await this.user({ id: userId });
+    const user = await this.user({ id: userId }, { games: true });
     return user && user.balance >= amountToCheck;
   }
 
-  async updateBalance(amount: number, isRise: boolean, user: User) {
-    // this.gatewayService.emitSocketEvent(EventType.UpdateUserBalance + user.id);
+  async updateBalance(amount: number, isRise: boolean, { id, balance }: User) {
     await this.updateUser({
       where: {
-        id: user.id,
+        id: id,
       },
       data: {
-        balance: isRise ? user.balance + amount : user.balance - amount,
+        balance: isRise ? balance + amount : balance - amount,
       },
+    });
+    this.eventEmitter.emit(EventType.UpdateUserBalance, {
+      id,
+      balance: isRise ? balance + amount : balance - amount,
     });
   }
 }
